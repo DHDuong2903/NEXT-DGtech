@@ -7,11 +7,36 @@ import { Button } from "../ui/button";
 import ModeToggle from "./ModeToggle";
 import { Package, Search, ShoppingCart } from "lucide-react";
 import { Input } from "../ui/input";
+import { useEffect } from "react";
+import { userApi } from "@/services/userApi";
 
 const Navbar = () => {
   const { user } = useUser();
   const { openSignIn } = useClerk();
   const router = useRouter();
+
+  // Sync user to backend
+  useEffect(() => {
+    const sync = async () => {
+      if (user) {
+        const email = user.primaryEmailAddress?.emailAddress;
+        if (!email) return;
+
+        try {
+          await userApi.syncUser({
+            clerkId: user.id,
+            email,
+            firstName: user.firstName || "",
+            lastName: user.lastName || "",
+          });
+        } catch (error) {
+          console.error("Sync error: ", error);
+        }
+      }
+    };
+    sync();
+  }, [user]);
+
   return (
     <div className="w-full h-20 border-b flex items-center justify-between lg:px-30 px-6">
       {/* Logo */}
